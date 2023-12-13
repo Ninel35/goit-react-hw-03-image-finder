@@ -1,12 +1,11 @@
+import  css  from "./Gallery.module.css";
 
-import { ImageGalleryItem } from "components/ImageGalleryItem";
-
-export const ImageGallery = ({images}) => {
+export const ImageGallery = ({children}) => {
     
-        return (
-            <ul className="gallery">
-                {images && images.map((elem) => <ImageGalleryItem key={elem.id} webformatURL={elem.webformatURL} largeImageURL={elem.largeImageURL} />)}
-            </ul>
-        )
+    return (
+        <ul className={css.gallery}>
+            {children}
+        </ul>
+    );
     
 }
