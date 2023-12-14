@@ -1,24 +1,71 @@
+import { Component } from "react";
+import css from "./Searchbar.module.css";
 
-export const Searchbar = ({handleSubmit}) => {
+
+// export const Searchbar = ({handleSubmit, children}) => {
+
+//       return (
+//         <header className={css.Searchbar}>
+//           <form onSubmit={handleSubmit} className={css.SearchForm}>
+//             <button type="submit" className={css.SearchFormButton} >
+//               <span className={css.SearchFormButtonLabel}> {children}</span>
+//             </button>
+
+//             <input
+//               className={css.SearchFormInput}
+//               type="text"
+//               autoComplete="off"
+//               autoFocus
+//               placeholder="Search images and photos"
+//               name="search"
+//             />
+//           </form>
+//         </header>
+//       );
+//     }
+
+
+export class Searchbar extends Component {
+  state = {
+    query: '',
+
+  }
+  handleChange = (elem) => {
+    this.setState({query: elem.target.value})
+  }
+  handleSubmit = (elem) => {
+      const { query } = this.state
+    elem.preventDefault();
+  
+  
+    this.props.onSubmit(query)
+    this.setState({query: ''})
+  }
+  render() {
+const { query } = this.state
 
       return (
-        <header className="searchbar">
-          <form onSubmit={handleSubmit} className="form">
-            <button type="submit" className="button" >
-              <span className="button-label">Search</span>
+        <header className={css.Searchbar}>
+          <form onSubmit={this.handleSubmit} className={css.SearchForm}>
+            <button type="submit" className={css.SearchFormButton} >
+              {this.props.children}
             </button>
 
             <input
-              className="input"
+              className={css.SearchFormInput}
               type="text"
               autoComplete="off"
               autoFocus
               placeholder="Search images and photos"
               name="search"
+              value={query}
+              onChange={this.handleChange}
             />
           </form>
         </header>
       );
+}
+  
     }
 
 

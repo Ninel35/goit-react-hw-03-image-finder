@@ -6,15 +6,16 @@ import { Loader } from "./Loader";
 import { Button } from "./Button";
 import { ImageGalleryItem } from "./ImageGalleryItem";
 import { MyModal } from "./Modal";
+import { IoSearch } from "react-icons/io5";
 
 
 export class App extends Component {
   state = {
+    query: '',
     images: null,
-    filter: "",
     page: 1,
     isLoading: false,
-    error: '',
+    error: null,
     loadMore: true,
     largeImg: '',
     tags: '',
@@ -22,10 +23,20 @@ export class App extends Component {
   }
 
   componentDidMount() {
-     this.getImages()
+        const { query, page} = this.state
+
+    this.getImages(query, page, '')
+    
   }
 
-  openModal = (largeImg, tags) => {
+  componentDidUpdate(_, prevState) {
+    const { query, page} = this.state
+    if (prevState.query !== query || prevState.page !== page) {
+    this.getImages(query, page, prevState.query)
+  }
+  }
+
+   openModal = (largeImg, tags) => {
     this.setState({ isShownModal: true, largeImg, tags })
   }
 
@@ -33,22 +44,22 @@ export class App extends Component {
     this.setState({ isShownModal: false, largeImg: '', tags: '' })
   }
   
-  componentDidUpdate(_, prevState) {
-    if (this.state.filter !== prevState.filter || prevState.page !== this.state.page ){
-      this.getImages()
-    } 
-  }
-  
-
-  getImages = async () => {
+  getImages = async (query, page, prevQuery) => {
+   
+    this.setState({ isLoading: true})
     try {
-      this.setState({ isLoading: true })
-      const response = await getAllImages(this.state.filter, this.state.page);
-      console.log(response)
-      this.setState((prev) => {
+    
+      const response = await getAllImages(query, page)
+
+      if (response.hits.length === 0) return
+      if (prevQuery !== query) {
+        this.setState({ images: response.hits })
+        return
+      }
+     this.setState((prev) => {
         return {
           images: prev.images ? [...prev.images, ...response.hits] : response.hits,
-           loadMore: this.state.page < Math.ceil(response.totalHits / 12 )
+           loadMore: page < Math.ceil(response.totalHits / 12 )
         }
       }
       );
@@ -60,37 +71,36 @@ export class App extends Component {
       
     }
   };
-  
-  handleLoadMore = () => {
+
+   handleLoadMore = () => {
     this.setState((prev)=>({page: prev.page +1}))
   }
 
-  handleSubmit = (evt) => {
-    evt.preventDefault()
-    this.setState({
-      filter: evt.target.elements.search.value
-    })
+  onHandleSubmit = (value) => {
+    this.setState({ query: value })
   }
 
   render() {
-    const {isLoading, error, loadMore} = this.state
+    const { isLoading, error, loadMore } = this.state
+    
     return (
       <>
-        <Searchbar handleSubmit={this.handleSubmit} />
-        {isLoading && <Loader />}
-        {error && <h2>{error}</h2>}
-        
-        <ImageGallery >
-          {this.state.images && this.state.images.map((elem) => <ImageGalleryItem key={elem.id} webformatURL={elem.webformatURL} alt={elem.tags} openModal={()=> this.openModal(elem.largeImageURL, elem.tags) } />)}
+        <Searchbar onSubmit={this.onHandleSubmit}>
+<IoSearch />
+
+        </Searchbar>
+          {isLoading && <Loader />}
+           {error && <h2>{error}</h2>}
+          
+        <ImageGallery > {this.state.images && this.state.images.map((elem) => <ImageGalleryItem key={elem.id} webformatURL={elem.webformatURL} alt={elem.tags} openModal={()=> this.openModal(elem.largeImageURL, elem.tags) } />)}
         </ImageGallery>
         <MyModal modalIsOpen={this.state.isShownModal}
           closeModal={this.closeModal}
           largeImg={this.state.largeImg}
-        tags={this.state.tags}/>
+          tags={this.state.tags} />
         {loadMore && <Button handleLoadMore={this.handleLoadMore} />}
+      
       </>
-    
     )
   }
- 
-};
+}
