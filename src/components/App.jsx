@@ -48,12 +48,14 @@ export class App extends Component {
    
     this.setState({ isLoading: true})
     try {
-    
+      if (prevQuery !== query) {
+        page=1
+      }
       const response = await getAllImages(query, page)
 
       if (response.hits.length === 0) return
       if (prevQuery !== query) {
-        this.setState({ images: response.hits })
+        this.setState({ images: response.hits, page: 1})
         return
       }
      this.setState((prev) => {
