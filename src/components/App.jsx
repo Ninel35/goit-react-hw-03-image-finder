@@ -16,23 +16,18 @@ export class App extends Component {
     page: 1,
     isLoading: false,
     error: null,
-    loadMore: true,
+    loadMore: false,
     largeImg: '',
     tags: '',
     isShownModal: false
   }
 
-  componentDidMount() {
-        const { query, page} = this.state
-
-    this.getImages(query, page, '')
-    
-  }
+ 
 
   componentDidUpdate(_, prevState) {
     const { query, page} = this.state
     if (prevState.query !== query || prevState.page !== page) {
-    this.getImages(query, page, prevState.query)
+    this.getImages(query, page)
   }
   }
 
@@ -43,44 +38,36 @@ export class App extends Component {
   closeModal = () => {
     this.setState({ isShownModal: false, largeImg: '', tags: '' })
   }
-  
-  getImages = async (query, page, prevQuery) => {
-   
-    this.setState({ isLoading: true})
-    try {
-      if (prevQuery !== query) {
-        page=1
-      }
-      const response = await getAllImages(query, page)
 
-      if (response.hits.length === 0) return
-      if (prevQuery !== query) {
-        this.setState({ images: response.hits, page: 1})
-        return
-      }
-     this.setState((prev) => {
+    getImages = async (query, page) => {
+    this.setState({ isLoading: true });
+    try {
+      const response = await getAllImages(query, page);
+
+      if (response.hits.length === 0) return;
+
+      this.setState(prev => {
         return {
-          images: prev.images ? [...prev.images, ...response.hits] : response.hits,
-           loadMore: page < Math.ceil(response.totalHits / 12 )
-        }
-      }
-      );
-  
+            images: prev.images ? [...prev.images, ...response.hits] : response.hits,
+          loadMore: page < Math.ceil(response.totalHits / 12),
+        };
+      });
     } catch (error) {
-      this.setState({ error: error.message })
+      this.setState({ error: error.message });
     } finally {
-      this.setState({ isLoading: false })
-      
+      this.setState({ isLoading: false });
     }
   };
+  
+ 
 
    handleLoadMore = () => {
     this.setState((prev)=>({page: prev.page +1}))
   }
 
-  onHandleSubmit = (value) => {
-    this.setState({ query: value })
-  }
+    onHandleSubmit = value => {
+    this.setState({ query: value, page: 1, images: null });
+  };
 
   render() {
     const { isLoading, error, loadMore } = this.state

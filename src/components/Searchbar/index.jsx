@@ -10,14 +10,16 @@ export class Searchbar extends Component {
   handleChange = (elem) => {
     this.setState({query: elem.target.value})
   }
+
   handleSubmit = (elem) => {
-      const { query } = this.state
+    const { query } = this.state
     elem.preventDefault();
   
-  
+    if (!query.trim()) return alert("Can not be empty")
     this.props.onSubmit(query)
-    this.setState({query: ''})
+    this.setState({ query: '' })
   }
+  
   render() {
 const { query } = this.state
 
